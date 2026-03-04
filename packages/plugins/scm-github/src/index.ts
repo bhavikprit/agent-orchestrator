@@ -233,7 +233,14 @@ function createGitHubSCM(): SCM {
           };
         });
       } catch (err) {
-        // Propagate so callers (getCISummary) can decide how to handle.
+        // gh pr checks exits with code 1 and "no checks reported" when a PR
+        // has no CI configured. This is not an error — return empty list so
+        // getCISummary returns "none" instead of "failing". (fixes #117)
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("no checks reported")) {
+          return [];
+        }
+        // Propagate real errors so callers (getCISummary) can decide how to handle.
         // Do NOT silently return [] — that causes a fail-open where CI
         // appears healthy when we simply failed to fetch check status.
         throw new Error("Failed to fetch CI checks", { cause: err });

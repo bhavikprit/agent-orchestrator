@@ -291,6 +291,12 @@ describe("scm-github plugin", () => {
       expect(checks[0].startedAt).toBeUndefined();
       expect(checks[0].completedAt).toBeUndefined();
     });
+
+    it("returns empty array when gh reports 'no checks reported' (fixes #117)", async () => {
+      mockGhError("no checks reported on the 'feat/my-feature' branch");
+      const checks = await scm.getCIChecks(pr);
+      expect(checks).toEqual([]);
+    });
   });
 
   // ---- getCISummary ------------------------------------------------------
@@ -328,6 +334,11 @@ describe("scm-github plugin", () => {
     it('returns "failing" on error (fail-closed)', async () => {
       mockGhError();
       expect(await scm.getCISummary(pr)).toBe("failing");
+    });
+
+    it('returns "none" when gh reports no checks reported (fixes #117)', async () => {
+      mockGhError("no checks reported on the 'main' branch");
+      expect(await scm.getCISummary(pr)).toBe("none");
     });
 
     it('returns "none" when all checks are skipped', async () => {
