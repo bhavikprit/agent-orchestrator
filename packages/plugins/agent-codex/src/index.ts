@@ -567,6 +567,10 @@ function createCodexAgent(): Agent {
     name: "codex",
     processName: "codex",
 
+    getBinaryName(): string {
+      return "codex";
+    },
+
     getLaunchCommand(config: AgentLaunchConfig): string {
       const binary = resolvedBinary ?? "codex";
       const parts: string[] = [shellEscape(binary)];

@@ -630,6 +630,10 @@ function createClaudeCodeAgent(): Agent {
     processName: "claude",
     promptDelivery: "post-launch",
 
+    getBinaryName(): string {
+      return "claude";
+    },
+
     getLaunchCommand(config: AgentLaunchConfig): string {
       // Note: CLAUDECODE is unset via getEnvironment() (set to ""), not here.
       // This command must be safe for both shell and execFile contexts.

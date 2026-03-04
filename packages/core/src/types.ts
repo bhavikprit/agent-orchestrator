@@ -322,6 +322,13 @@ export interface Agent {
    * run git/gh commands. Without this, PRs created by agents never show up.
    */
   setupWorkspaceHooks?(workspacePath: string, config: WorkspaceHooksConfig): Promise<void>;
+
+  /**
+   * Optional: Return the CLI binary name to verify it's installed before spawning.
+   * Used for pre-flight checks — if the binary is not in PATH, spawn fails fast
+   * with a clear error instead of creating orphaned worktrees/tmux sessions.
+   */
+  getBinaryName?(): string;
 }
 
 export interface AgentLaunchConfig {

@@ -231,6 +231,38 @@ describe("spawn", () => {
     expect(session.branch).toBe("feat/foo-bar");
   });
 
+  it("fails fast when agent binary is not in PATH (fixes #165)", async () => {
+    const agentWithBinary: Agent = {
+      ...mockAgent,
+      getBinaryName: () => "nonexistent-binary-xyz-12345",
+    };
+    const registryWithBinary: PluginRegistry = {
+      ...mockRegistry,
+      get: vi.fn().mockImplementation((slot: string) => {
+        if (slot === "runtime") return mockRuntime;
+        if (slot === "agent") return agentWithBinary;
+        if (slot === "workspace") return mockWorkspace;
+        return null;
+      }),
+    };
+
+    const sm = createSessionManager({ config, registry: registryWithBinary });
+    await expect(sm.spawn({ projectId: "my-app" })).rejects.toThrow(
+      "Agent CLI 'nonexistent-binary-xyz-12345' not found in PATH",
+    );
+
+    // No resources should have been created
+    expect(mockWorkspace.create).not.toHaveBeenCalled();
+    expect(mockRuntime.create).not.toHaveBeenCalled();
+  });
+
+  it("skips pre-flight check when agent has no getBinaryName", async () => {
+    // Default mockAgent has no getBinaryName — spawn should succeed
+    const sm = createSessionManager({ config, registry: mockRegistry });
+    const session = await sm.spawn({ projectId: "my-app" });
+    expect(session.id).toBe("app-1");
+  });
+
   it("uses tracker.branchName when tracker is available", async () => {
     const mockTracker: Tracker = {
       name: "mock-tracker",

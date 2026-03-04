@@ -11,8 +11,12 @@
  * Reference: scripts/claude-ao-session, scripts/send-to-session
  */
 
+import { execFile } from "node:child_process";
 import { statSync, existsSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 import {
   isIssueNotFoundError,
   isRestorable,
@@ -335,6 +339,21 @@ export function createSessionManager(deps: SessionManagerDeps): SessionManager {
 
     if (!plugins.agent) {
       throw new Error(`Agent plugin '${project.agent ?? config.defaults.agent}' not found`);
+    }
+
+    // Pre-flight: verify agent CLI binary is installed before creating
+    // any resources (worktree, tmux session, metadata). (fixes #165)
+    const binaryName = plugins.agent.getBinaryName?.();
+    if (binaryName) {
+      const { stdout } = await execFileAsync("which", [binaryName], {
+        timeout: 5_000,
+      }).catch(() => ({ stdout: "" }));
+      if (!stdout.trim()) {
+        throw new Error(
+          `Agent CLI '${binaryName}' not found in PATH. ` +
+            `Install it before spawning a ${plugins.agent.name} session.`,
+        );
+      }
     }
 
     // Validate issue exists BEFORE creating any resources
