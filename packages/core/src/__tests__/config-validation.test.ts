@@ -582,3 +582,65 @@ describe("Config Defaults", () => {
     expect(validated.projects.proj1.scm).toEqual({ plugin: "gitlab" });
   });
 });
+
+describe("Config Validation - Environment Variables", () => {
+  it("accepts defaults.env as Record<string, string>", () => {
+    const config = {
+      defaults: {
+        env: {
+          ANTHROPIC_API_KEY: "sk-test-123",
+          CUSTOM_VAR: "hello",
+        },
+      },
+      projects: {
+        proj1: {
+          path: "/repos/myapp",
+          repo: "org/myapp",
+          defaultBranch: "main",
+        },
+      },
+    };
+
+    const validated = validateConfig(config);
+    expect(validated.defaults.env).toEqual({
+      ANTHROPIC_API_KEY: "sk-test-123",
+      CUSTOM_VAR: "hello",
+    });
+  });
+
+  it("accepts per-project env as Record<string, string>", () => {
+    const config = {
+      projects: {
+        proj1: {
+          path: "/repos/myapp",
+          repo: "org/myapp",
+          defaultBranch: "main",
+          env: {
+            PROJECT_TOKEN: "tok-456",
+          },
+        },
+      },
+    };
+
+    const validated = validateConfig(config);
+    expect(validated.projects.proj1.env).toEqual({
+      PROJECT_TOKEN: "tok-456",
+    });
+  });
+
+  it("allows config without env fields", () => {
+    const config = {
+      projects: {
+        proj1: {
+          path: "/repos/myapp",
+          repo: "org/myapp",
+          defaultBranch: "main",
+        },
+      },
+    };
+
+    const validated = validateConfig(config);
+    expect(validated.defaults.env).toBeUndefined();
+    expect(validated.projects.proj1.env).toBeUndefined();
+  });
+});

@@ -158,6 +158,7 @@ const ProjectConfigSchema = z.object({
   scm: SCMConfigSchema.optional(),
   symlinks: z.array(z.string()).optional(),
   postCreate: z.array(z.string()).optional(),
+  env: z.record(z.string()).optional(),
   agentConfig: AgentSpecificConfigSchema.default({}),
   orchestrator: RoleAgentConfigSchema,
   worker: RoleAgentConfigSchema,
@@ -177,6 +178,7 @@ const DefaultPluginsSchema = z.object({
   agent: z.string().default("claude-code"),
   workspace: z.string().default("worktree"),
   notifiers: z.array(z.string()).default(["composio", "desktop"]),
+  env: z.record(z.string()).optional(),
   orchestrator: RoleAgentDefaultsSchema,
   worker: RoleAgentDefaultsSchema,
 });

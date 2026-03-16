@@ -919,6 +919,8 @@ export interface DefaultPlugins {
   agent: string;
   workspace: string;
   notifiers: string[];
+  /** Environment variables to pass to all agent sessions */
+  env?: Record<string, string>;
   orchestrator?: {
     agent?: string;
   };
@@ -997,6 +999,9 @@ export interface ProjectConfig {
     | "kill-previous";
 
   opencodeIssueSessionStrategy?: "reuse" | "delete" | "ignore";
+
+  /** Environment variables to pass to agent sessions for this project */
+  env?: Record<string, string>;
 
   /** Task decomposition configuration */
   decomposer?: {
